@@ -1,4 +1,6 @@
 .vscode/
 build/
+dataset/
 lib/
+results/
 Vocabulary/ORBvoc.txt
