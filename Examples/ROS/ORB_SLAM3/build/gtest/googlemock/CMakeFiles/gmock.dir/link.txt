@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared -Wl,-soname,libgmock.so -o /home/tianbot/catkin_ws_orbslam3/src/ORB_SLAM3/Examples/ROS/ORB_SLAM3/lib/libgmock.so CMakeFiles/gmock.dir/__/googletest/src/gtest-all.cc.o CMakeFiles/gmock.dir/src/gmock-all.cc.o  -L/opt/ros/melodic/lib -Wl,-rpath,/opt/ros/melodic/lib -lpthread 

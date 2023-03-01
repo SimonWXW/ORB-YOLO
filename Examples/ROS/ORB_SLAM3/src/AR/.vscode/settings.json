@@ -1,0 +1,12 @@
+{
+    "ros.distro": "melodic",
+    "python.autoComplete.extraPaths": [
+        "/home/tianbot/ros_ws/devel/lib/python2.7/dist-packages",
+        "/home/tianbot/tianbot_mini_ws/devel/lib/python2.7/dist-packages",
+        "/home/tianbot/manipulation_ws/devel/lib/python2.7/dist-packages",
+        "/home/tianbot/turtlebot_ws/devel/lib/python2.7/dist-packages",
+        "/home/tianbot/study_ws/devel/lib/python2.7/dist-packages",
+        "/home/tianbot/tianbot_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ]
+}
