@@ -25,19 +25,32 @@
 
 #include<System.h>
 
+// fastdeploy c++ api
+#include "fastdeploy/vision.h"
+
 using namespace std;
 
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps);
 
+// fastdeploy infer function
+void CpuInfer(const std::string& model_file, string image_file);
+void GpuInfer(const std::string& model_file, string image_file);
+void TrtInfer(const std::string& model_file, string image_file);
+
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    // Check arguments
+    if(argc != 6)
     {
-        cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
+        cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association infer_mode" << endl;
         return 1;
     }
 
+    //load yolov8 model
+    const std::string& model_file = "/home/tianbot/ORB_SLAM3-with-YOLO/model/yolov8s.onnx";
+    string image_file;
+    
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;
@@ -78,6 +91,7 @@ int main(int argc, char **argv)
         imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
         double tframe = vTimestamps[ni];
+        image_file = string(argv[3])+"/"+vstrImageFilenamesRGB[ni];
 
         if(imRGB.empty())
         {
@@ -100,6 +114,19 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 
+        // detect bounding box
+        if(string(argv[5]) == "cpu")
+            CpuInfer(model_file, image_file);
+        else if(string(argv[5]) == "gpu")
+            GpuInfer(model_file, image_file);
+        else if(string(argv[5]) == "trt")
+            TrtInfer(model_file, image_file);
+        else{
+            printf("infer mode error");
+            return 1;
+        }
+
+        // TODO: pass bounding box to tracking thread
         // Pass the image to the SLAM system
         SLAM.TrackRGBD(imRGB,imD,tframe);
 
@@ -120,8 +147,10 @@ int main(int argc, char **argv)
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
 
-        if(ttrack<T)
+        if(ttrack<T)            
             usleep((T-ttrack)*1e6);
+            
+        
     }
 
     // Stop all threads
@@ -170,4 +199,81 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
         }
     }
+}
+
+void CpuInfer(const std::string& model_file, string image_file) {
+  auto model = fastdeploy::vision::detection::YOLOv8(model_file);
+  if (!model.Initialized()) {
+    std::cerr << "Failed to initialize." << std::endl;
+    return;
+  }
+
+  auto im = cv::imread(image_file);
+
+  fastdeploy::vision::DetectionResult res;
+  if (!model.Predict(im, &res)) {
+    std::cerr << "Failed to predict." << std::endl;
+    return;
+  }
+  //std::cout << res.Str() << std::endl;
+  //cout << res.type << endl;
+
+  auto vis_im = fastdeploy::vision::VisDetection(im, res);
+  //cv::imwrite("./results/vis_result.jpg", vis_im);
+  //cv::imshow("bbox", vis_im);
+  //cv::waitKey(1);
+}
+
+
+void GpuInfer(const std::string& model_file, string image_file) {
+  auto option = fastdeploy::RuntimeOption();
+  option.UseGpu();
+  auto model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+  if (!model.Initialized()) {
+    std::cerr << "Failed to initialize." << std::endl;
+    return;
+  }
+
+  auto im = cv::imread(image_file);
+
+  fastdeploy::vision::DetectionResult res;
+  if (!model.Predict(im, &res)) {
+    std::cerr << "Failed to predict." << std::endl;
+    return;
+  }
+  
+  //std::cout << res.Str() << std::endl;
+  //cout << res.type << endl;
+
+  auto vis_im = fastdeploy::vision::VisDetection(im, res);
+  //cv::imwrite("./results/vis_result.jpg", vis_im);
+  cv::imshow("bbox", vis_im);
+  cv::waitKey(1);
+}
+
+void TrtInfer(const std::string& model_file, string image_file) {
+  auto option = fastdeploy::RuntimeOption();
+  option.UseGpu();
+  option.UseTrtBackend();
+  option.SetTrtInputShape("images", {1, 3, 640, 640});
+  auto model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+  if (!model.Initialized()) {
+    std::cerr << "Failed to initialize." << std::endl;
+    return;
+  }
+
+  auto im = cv::imread(image_file);
+
+  fastdeploy::vision::DetectionResult res;
+  if (!model.Predict(im, &res)) {
+    std::cerr << "Failed to predict." << std::endl;
+    return;
+  }
+  //std::cout << res.Str() << std::endl;
+  //cout << res.type << endl;
+
+  auto vis_im = fastdeploy::vision::VisDetection(im, res);
+  //cv::imwrite("./results/vis_result.jpg", vis_im);
+  //cv::imshow("bbox", vis_im);
+  //cv::waitKey(1);
 }

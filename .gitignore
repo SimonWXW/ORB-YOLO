@@ -2,5 +2,7 @@
 build/
 dataset/
 lib/
+model/
 results/
+Thirdparty/
 Vocabulary/ORBvoc.txt

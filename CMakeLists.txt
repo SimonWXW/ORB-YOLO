@@ -42,7 +42,12 @@ MESSAGE(${OpenCV_VERSION})
 
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
-find_package(realsense2)
+#find_package(realsense2)
+
+# Specify the fastdeploy library path after downloading and decompression
+set(FASTDEPLOY_INSTALL_DIR /home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/fastdeploy-linux-x64-gpu-1.0.4)
+
+include(${FASTDEPLOY_INSTALL_DIR}/FastDeploy.cmake)
 
 include_directories(
 ${PROJECT_SOURCE_DIR}
@@ -51,6 +56,8 @@ ${PROJECT_SOURCE_DIR}/include/CameraModels
 ${PROJECT_SOURCE_DIR}/Thirdparty/Sophus
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
+# Add FastDeploy dependent header files
+${FASTDEPLOY_INCS}
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -128,6 +135,7 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 )
 
 # If RealSense SDK is found the library is added and its examples compiled
+#[[
 if(realsense2_FOUND)
     include_directories(${PROJECT_NAME}
     ${realsense_INCLUDE_DIR}
@@ -136,7 +144,7 @@ if(realsense2_FOUND)
     ${realsense2_LIBRARY}
     )
 endif()
-
+]]
 
 # Build examples
 
@@ -145,8 +153,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/RGB-D)
 
 add_executable(rgbd_tum
         Examples/RGB-D/rgbd_tum.cc)
-target_link_libraries(rgbd_tum ${PROJECT_NAME})
-
+target_link_libraries(rgbd_tum 
+        ${PROJECT_NAME}
+        # Add FastDeploy dependent libraries
+        ${FASTDEPLOY_LIBS} )
+#[[
 if(realsense2_FOUND)
     add_executable(rgbd_realsense_D435i
             Examples/RGB-D/rgbd_realsense_D435i.cc)
@@ -390,3 +401,4 @@ if(realsense2_FOUND)
             Examples_old/Stereo-Inertial/stereo_inertial_realsense_D435i.cc)
     target_link_libraries(stereo_inertial_realsense_D435i_old ${PROJECT_NAME})
 endif()
+]]

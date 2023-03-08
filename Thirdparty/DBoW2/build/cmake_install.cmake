@@ -1,4 +1,4 @@
-# Install script for directory: /home/tianbot/catkin_ws_orbslam3/src/ORB_SLAM3/Thirdparty/DBoW2
+# Install script for directory: /home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/DBoW2
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/tianbot/catkin_ws_orbslam3/src/ORB_SLAM3/Thirdparty/DBoW2/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/DBoW2/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
