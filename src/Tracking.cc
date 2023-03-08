@@ -34,6 +34,8 @@
 #include <mutex>
 #include <chrono>
 
+#include "fastdeploy/vision.h"
+
 
 using namespace std;
 
@@ -1517,7 +1519,11 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
 }
 
 
-Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp, string filename)
+Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
+                                    const cv::Mat &imD, 
+                                    const double &timestamp, 
+                                    string filename,
+                                    fastdeploy::vision::DetectionResult res)
 {
     mImGray = imRGB;
     cv::Mat imDepth = imD;
@@ -1540,6 +1546,13 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     if((fabs(mDepthMapFactor-1.0f)>1e-5) || imDepth.type()!=CV_32F)
         imDepth.convertTo(imDepth,CV_32F,mDepthMapFactor);
 
+    // test: print all boxes class and corresponding coordinates
+        cout << "boxes size: " << res.boxes.size() << endl;
+        for(int i=0; i<res.boxes.size(); i++){
+            std::cout << "class: " << res.label_ids[i] << " score: " << res.scores[i] << " x1, y1 " << res.boxes[i][0] << ", " << res.boxes[i][1] << " x2, y2 " << res.boxes[i][2] << ", " << res.boxes[i][3] << std::endl;
+        }
+    
+    /// TODO: add detection result to frame
     if (mSensor == System::RGBD)
         mCurrentFrame = Frame(mImGray,imDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
     else if(mSensor == System::IMU_RGBD)

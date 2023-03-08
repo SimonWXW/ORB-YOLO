@@ -127,6 +127,8 @@ add_subdirectory(Thirdparty/g2o)
 target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
+# Add FastDeploy dependent libraries
+${FASTDEPLOY_LIBS}
 ${Pangolin_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
@@ -153,10 +155,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/RGB-D)
 
 add_executable(rgbd_tum
         Examples/RGB-D/rgbd_tum.cc)
-target_link_libraries(rgbd_tum 
-        ${PROJECT_NAME}
-        # Add FastDeploy dependent libraries
-        ${FASTDEPLOY_LIBS} )
+target_link_libraries(rgbd_tum ${PROJECT_NAME})
 #[[
 if(realsense2_FOUND)
     add_executable(rgbd_realsense_D435i

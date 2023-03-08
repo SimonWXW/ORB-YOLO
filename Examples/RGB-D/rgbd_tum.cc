@@ -127,16 +127,8 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        // print all boxes class and corresponding coordinates
-        cout << "boxes size: " << res.boxes.size() << endl;
-        for(int i=0; i<res.boxes.size(); i++){
-            std::cout << "class: " << res.label_ids[i] << " score: " << res.scores[i] << " x1, y1 " << res.boxes[i][0] << ", " << res.boxes[i][1] << " x2, y2 " << res.boxes[i][2] << ", " << res.boxes[i][3] << std::endl;
-        }
-  
-
-        // TODO: pass bounding box to tracking thread
-        // Pass the image to the SLAM system
-        SLAM.TrackRGBD(imRGB,imD,tframe);
+        // Pass the image and bounding box to the SLAM system
+        SLAM.TrackRGBD(imRGB,imD,tframe,res);
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
