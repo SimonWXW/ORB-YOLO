@@ -34,7 +34,7 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps);
 
 // fastdeploy infer function
-void CpuInfer(const std::string& model_file, string image_file);
+void CpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res);
 void GpuInfer(const std::string& model_file, string image_file);
 void TrtInfer(const std::string& model_file, string image_file);
 
@@ -47,9 +47,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    //load yolov8 model
+    //yolov8 params
     const std::string& model_file = "/home/tianbot/ORB_SLAM3-with-YOLO/model/yolov8s.onnx";
     string image_file;
+    fastdeploy::vision::DetectionResult res;
     
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
 
         // detect bounding box
         if(string(argv[5]) == "cpu")
-            CpuInfer(model_file, image_file);
+            CpuInfer(model_file, image_file, &res);
         else if(string(argv[5]) == "gpu")
             GpuInfer(model_file, image_file);
         else if(string(argv[5]) == "trt")
@@ -125,6 +126,13 @@ int main(int argc, char **argv)
             printf("infer mode error");
             return 1;
         }
+
+        // print all boxes class and corresponding coordinates
+        cout << "boxes size: " << res.boxes.size() << endl;
+        for(int i=0; i<res.boxes.size(); i++){
+            std::cout << "class: " << res.label_ids[i] << " score: " << res.scores[i] << " x1, y1 " << res.boxes[i][0] << ", " << res.boxes[i][1] << " x2, y2 " << res.boxes[i][2] << ", " << res.boxes[i][3] << std::endl;
+        }
+  
 
         // TODO: pass bounding box to tracking thread
         // Pass the image to the SLAM system
@@ -201,7 +209,7 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
     }
 }
 
-void CpuInfer(const std::string& model_file, string image_file) {
+void CpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res) {
   auto model = fastdeploy::vision::detection::YOLOv8(model_file);
   if (!model.Initialized()) {
     std::cerr << "Failed to initialize." << std::endl;
@@ -210,16 +218,13 @@ void CpuInfer(const std::string& model_file, string image_file) {
 
   auto im = cv::imread(image_file);
 
-  fastdeploy::vision::DetectionResult res;
-  if (!model.Predict(im, &res)) {
+  //fastdeploy::vision::DetectionResult res;
+  if (!model.Predict(im, res)) {
     std::cerr << "Failed to predict." << std::endl;
     return;
   }
-  //std::cout << res.Str() << std::endl;
-  //cout << res.type << endl;
 
-  auto vis_im = fastdeploy::vision::VisDetection(im, res);
-  //cv::imwrite("./results/vis_result.jpg", vis_im);
+  //auto vis_im = fastdeploy::vision::VisDetection(im, res);
   //cv::imshow("bbox", vis_im);
   //cv::waitKey(1);
 }
@@ -241,12 +246,8 @@ void GpuInfer(const std::string& model_file, string image_file) {
     std::cerr << "Failed to predict." << std::endl;
     return;
   }
-  
-  //std::cout << res.Str() << std::endl;
-  //cout << res.type << endl;
 
   auto vis_im = fastdeploy::vision::VisDetection(im, res);
-  //cv::imwrite("./results/vis_result.jpg", vis_im);
   cv::imshow("bbox", vis_im);
   cv::waitKey(1);
 }
@@ -269,11 +270,8 @@ void TrtInfer(const std::string& model_file, string image_file) {
     std::cerr << "Failed to predict." << std::endl;
     return;
   }
-  //std::cout << res.Str() << std::endl;
-  //cout << res.type << endl;
 
   auto vis_im = fastdeploy::vision::VisDetection(im, res);
-  //cv::imwrite("./results/vis_result.jpg", vis_im);
   //cv::imshow("bbox", vis_im);
   //cv::waitKey(1);
 }
