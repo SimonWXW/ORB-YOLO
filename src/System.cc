@@ -394,12 +394,6 @@ Sophus::SE3f System::TrackRGBD(const cv::Mat &im,
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
-    // test: print all boxes class and corresponding coordinates
-        cout << "boxes size: " << res.boxes.size() << endl;
-        for(int i=0; i<res.boxes.size(); i++){
-            std::cout << "class: " << res.label_ids[i] << " score: " << res.scores[i] << " x1, y1 " << res.boxes[i][0] << ", " << res.boxes[i][1] << " x2, y2 " << res.boxes[i][2] << ", " << res.boxes[i][3] << std::endl;
-        }
-
     Sophus::SE3f Tcw = mpTracker->GrabImageRGBD(imToFeed,imDepthToFeed,timestamp,filename, res);
 
     unique_lock<mutex> lock2(mMutexState);

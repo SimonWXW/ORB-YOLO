@@ -197,12 +197,31 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     AssignFeaturesToGrid();
 }
 
-Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, GeometricCamera* pCamera,Frame* pPrevF, const IMU::Calib &ImuCalib)
+// RGB-D Constructor
+Frame::Frame(const cv::Mat &imGray, 
+                const cv::Mat &imDepth, 
+                const double &timeStamp, 
+                ORBextractor* extractor,
+                ORBVocabulary* voc, 
+                cv::Mat &K, 
+                cv::Mat &distCoef, 
+                const float &bf, 
+                const float &thDepth, 
+                GeometricCamera* pCamera,
+                fastdeploy::vision::DetectionResult res,
+                Frame* pPrevF, 
+                const IMU::Calib &ImuCalib)
     :mpcpi(NULL),mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(K.clone()), mK_(Converter::toMatrix3f(K)),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
      mImuCalib(ImuCalib), mpImuPreintegrated(NULL), mpPrevFrame(pPrevF), mpImuPreintegratedFrame(NULL), mpReferenceKF(static_cast<KeyFrame*>(NULL)), mbIsSet(false), mbImuPreintegrated(false),
      mpCamera(pCamera),mpCamera2(nullptr), mbHasPose(false), mbHasVelocity(false)
 {
+    // test: print all boxes class and corresponding coordinates
+        cout << "boxes size: " << res.boxes.size() << endl;
+        for(int i=0; i<res.boxes.size(); i++){
+            std::cout << "class: " << res.label_ids[i] << " score: " << res.scores[i] << " x1, y1 " << res.boxes[i][0] << ", " << res.boxes[i][1] << " x2, y2 " << res.boxes[i][2] << ", " << res.boxes[i][3] << std::endl;
+        }
+        
     // Frame ID
     mnId=nNextId++;
 
