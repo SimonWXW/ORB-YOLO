@@ -30,6 +30,8 @@
 #include<mutex>
 #include <unordered_set>
 
+#include "fastdeploy/vision.h"
+
 
 namespace ORB_SLAM3
 {
@@ -84,6 +86,9 @@ protected:
     map<long unsigned int, cv::Point2f> mmProjectPoints;
     map<long unsigned int, cv::Point2f> mmMatchedInImage;
 
+public:
+    fastdeploy::vision::DetectionResult* mpDetectedResult;
+    vector<bool> vbDynamicKeyPoints;
 };
 
 } //namespace ORB_SLAM

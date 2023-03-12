@@ -24,6 +24,8 @@
 
 #include<mutex>
 
+#include "fastdeploy/vision.h"
+
 namespace ORB_SLAM3
 {
 
@@ -54,6 +56,9 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
     vector<MapPoint*> vpOutlierMPs;
     map<long unsigned int, cv::Point2f> mProjectPoints;
     map<long unsigned int, cv::Point2f> mMatchedInImage;
+
+    //fastdeploy
+    fastdeploy::vision::DetectionResult* pDetectedResult;
 
     cv::Scalar standardColor(0,255,0);
     cv::Scalar odometryColor(255,0,0);
@@ -91,6 +96,9 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
 
             vCurrentDepth = mvCurrentDepth;
             thDepth = mThDepth;
+
+            //fastdeploy
+            pDetectedResult = mpDetectedResult;
 
         }
         else if(mState==Tracking::LOST)
@@ -176,6 +184,21 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
                     pt1.y=vCurrentKeys[i].pt.y-r;
                     pt2.x=vCurrentKeys[i].pt.x+r;
                     pt2.y=vCurrentKeys[i].pt.y+r;
+                }
+
+                // Draw bounding box if it is detected as person
+                if(pDetectedResult != nullptr)
+                {
+                    for(int j = 0; j < pDetectedResult->boxes.size(); j++)
+                    {
+                        if(pDetectedResult->label_ids[j] == 0)
+                        {
+                            cv::Point top_left = cv::Point(pDetectedResult->boxes[j][0], pDetectedResult->boxes[j][1]);
+                            cv::Point bottom_right = cv::Point(pDetectedResult->boxes[j][2], pDetectedResult->boxes[j][3]);
+            
+                            cv::rectangle(im, top_left, bottom_right, cv::Scalar(0, 0, 255), 2);
+                        }
+                    }
                 }
 
                 // This is a match to a MapPoint in the map
@@ -374,6 +397,9 @@ void FrameDrawer::Update(Tracking *pTracker)
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     mThDepth = pTracker->mCurrentFrame.mThDepth;
     mvCurrentDepth = pTracker->mCurrentFrame.mvDepth;
+    //fastdeploy 
+    mpDetectedResult = pTracker->mCurrentFrame.mpDetectedResult;
+    ///TODO: vbDynamicKeyPoints = pTracker->mCurrentFrame.vbDynamicKeyPoints;
 
     if(both){
         mvCurrentKeysRight = pTracker->mCurrentFrame.mvKeysRight;
