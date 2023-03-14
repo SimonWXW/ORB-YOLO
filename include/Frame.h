@@ -297,9 +297,9 @@ public:
     vector<float> mvLevelSigma2;
     vector<float> mvInvLevelSigma2;
 
-    //fastdeploy 
-    ///FIXME: you cannot use class to define a variable, instead you use the class pointer to do so.
-    fastdeploy::vision::DetectionResult* mpDetectedResult;
+    // bbox and class
+    vector<std::array<float, 4>> mvBoundingBox;
+    vector<int32_t> mvClass;
     vector<bool> vbDynamicKeyPoints;
 
     // Undistorted Image Bounds (computed once).

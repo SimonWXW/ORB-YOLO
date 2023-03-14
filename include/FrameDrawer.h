@@ -86,8 +86,9 @@ protected:
     map<long unsigned int, cv::Point2f> mmProjectPoints;
     map<long unsigned int, cv::Point2f> mmMatchedInImage;
 
-public:
-    fastdeploy::vision::DetectionResult* mpDetectedResult;
+    // bbox and class
+    vector<std::array<float, 4>> mvBoundingBox;
+    vector<int32_t> mvClass;
     vector<bool> vbDynamicKeyPoints;
 };
 

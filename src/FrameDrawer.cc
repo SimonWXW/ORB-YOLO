@@ -57,11 +57,13 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
     map<long unsigned int, cv::Point2f> mProjectPoints;
     map<long unsigned int, cv::Point2f> mMatchedInImage;
 
-    //fastdeploy
-    fastdeploy::vision::DetectionResult* pDetectedResult;
+    //local variable: bbox and class
+    vector<std::array<float, 4>> vBoundingBox;
+    vector<int32_t> vClass;
 
-    cv::Scalar standardColor(0,255,0);
-    cv::Scalar odometryColor(255,0,0);
+    cv::Scalar standardColor(0,255,0);  //green
+    cv::Scalar odometryColor(255,0,0);  //blue
+    cv::Scalar pureRed(0, 0, 255);     //red
 
     //Copy variables within scoped mutex
     {
@@ -97,8 +99,9 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
             vCurrentDepth = mvCurrentDepth;
             thDepth = mThDepth;
 
-            //fastdeploy
-            pDetectedResult = mpDetectedResult;
+            //copy from member variable to local variable
+            vBoundingBox = mvBoundingBox;
+            vClass = mvClass;
 
         }
         else if(mState==Tracking::LOST)
@@ -187,17 +190,11 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
                 }
 
                 // Draw bounding box if it is detected as person
-                if(pDetectedResult != nullptr)
-                {
-                    for(int j = 0; j < pDetectedResult->boxes.size(); j++)
-                    {
-                        if(pDetectedResult->label_ids[j] == 0)
-                        {
-                            cv::Point top_left = cv::Point(pDetectedResult->boxes[j][0], pDetectedResult->boxes[j][1]);
-                            cv::Point bottom_right = cv::Point(pDetectedResult->boxes[j][2], pDetectedResult->boxes[j][3]);
-            
-                            cv::rectangle(im, top_left, bottom_right, cv::Scalar(0, 0, 255), 2);
-                        }
+                for(int j = 0; j < mvBoundingBox.size(); j++){
+                    if(mvClass[j] == 0){    // person: 0
+                        cv::Point2f top_left = cv::Point2f(mvBoundingBox[j][0], mvBoundingBox[j][1]);
+                        cv::Point2f bottom_right = cv::Point2f(mvBoundingBox[j][2], mvBoundingBox[j][3]);
+                        cv::rectangle(im, top_left, bottom_right, pureRed, 2);
                     }
                 }
 
@@ -393,13 +390,16 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
 void FrameDrawer::Update(Tracking *pTracker)
 {
     unique_lock<mutex> lock(mMutex);
+
+    // bbox and class
+    mvBoundingBox = pTracker->mCurrentFrame.mvBoundingBox;
+    mvClass = pTracker->mCurrentFrame.mvClass;
+    // TODO: vbDynamicKeyPoints;
+
     pTracker->mImGray.copyTo(mIm);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     mThDepth = pTracker->mCurrentFrame.mThDepth;
     mvCurrentDepth = pTracker->mCurrentFrame.mvDepth;
-    //fastdeploy 
-    mpDetectedResult = pTracker->mCurrentFrame.mpDetectedResult;
-    ///TODO: vbDynamicKeyPoints = pTracker->mCurrentFrame.vbDynamicKeyPoints;
 
     if(both){
         mvCurrentKeysRight = pTracker->mCurrentFrame.mvKeysRight;

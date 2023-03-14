@@ -1,4 +1,6 @@
+.idea/
 .vscode/
+cmake-build-debug/
 build/
 dataset/
 lib/

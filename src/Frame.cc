@@ -30,6 +30,8 @@
 #include <include/CameraModels/Pinhole.h>
 #include <include/CameraModels/KannalaBrandt8.h>
 
+#include "fastdeploy/vision.h"
+
 namespace ORB_SLAM3
 {
 
@@ -71,7 +73,7 @@ Frame::Frame(const Frame &frame)
      mvRightToLeftMatch(frame.mvRightToLeftMatch), mvStereo3Dpoints(frame.mvStereo3Dpoints),
      mTlr(frame.mTlr), mRlr(frame.mRlr), mtlr(frame.mtlr), mTrl(frame.mTrl),
      mTcw(frame.mTcw), mbHasPose(false), mbHasVelocity(false),
-     mpDetectedResult(frame.mpDetectedResult)
+     mvBoundingBox(frame.mvBoundingBox), mvClass(frame.mvClass)
 {
     for(int i=0;i<FRAME_GRID_COLS;i++)
         for(int j=0; j<FRAME_GRID_ROWS; j++){
@@ -215,16 +217,18 @@ Frame::Frame(const cv::Mat &imGray,
     :mpcpi(NULL),mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(K.clone()), mK_(Converter::toMatrix3f(K)),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
      mImuCalib(ImuCalib), mpImuPreintegrated(NULL), mpPrevFrame(pPrevF), mpImuPreintegratedFrame(NULL), mpReferenceKF(static_cast<KeyFrame*>(NULL)), mbIsSet(false), mbImuPreintegrated(false),
-     mpCamera(pCamera),mpCamera2(nullptr), mbHasPose(false), mbHasVelocity(false),
-        mpDetectedResult(&res)
+     mpCamera(pCamera),mpCamera2(nullptr), mbHasPose(false), mbHasVelocity(false)
 {
-    
-    /* test: print all boxes class and corresponding coordinates
-        cout << "boxes size: " << mpDetectedResult->boxes.size() << endl;
-        for(int i=0; i<mpDetectedResult->boxes.size(); i++){
-            std::cout << "class: " << mpDetectedResult->label_ids[i] << " score: " << mpDetectedResult->scores[i] << " x1, y1 " << mpDetectedResult->boxes[i][0] << ", " << mpDetectedResult->boxes[i][1] << " x2, y2 " << mpDetectedResult->boxes[i][2] << ", " << mpDetectedResult->boxes[i][3] << std::endl;
+    mvBoundingBox = res.boxes;
+    mvClass = res.label_ids;
+    /*
+    // test: print all boxes class and corresponding coordinates
+        for(int i=0; i<mvBoundingBox.size(); i++){
+            cout << "class: " << mvClass[i] << endl;
         }
+        cout << "-----frame.cc-----" <<endl;
         */
+        
         
     // Frame ID
     mnId=nNextId++;

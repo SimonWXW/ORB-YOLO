@@ -35,8 +35,10 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 // fastdeploy infer function
 void CpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res);
+/*
 void GpuInfer(const std::string& model_file, string image_file);
 void TrtInfer(const std::string& model_file, string image_file);
+*/
 
 int main(int argc, char **argv)
 {
@@ -118,10 +120,12 @@ int main(int argc, char **argv)
         // detect bounding box
         if(string(argv[5]) == "cpu")
             CpuInfer(model_file, image_file, &res);
+        /*
         else if(string(argv[5]) == "gpu")
             GpuInfer(model_file, image_file);
         else if(string(argv[5]) == "trt")
             TrtInfer(model_file, image_file);
+        */
         else{
             printf("infer mode error");
             return 1;
@@ -221,7 +225,7 @@ void CpuInfer(const std::string& model_file, string image_file, fastdeploy::visi
   //cv::waitKey(1);
 }
 
-
+/*
 void GpuInfer(const std::string& model_file, string image_file) {
   auto option = fastdeploy::RuntimeOption();
   option.UseGpu();
@@ -267,3 +271,4 @@ void TrtInfer(const std::string& model_file, string image_file) {
   //cv::imshow("bbox", vis_im);
   //cv::waitKey(1);
 }
+*/

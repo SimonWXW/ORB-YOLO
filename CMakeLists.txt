@@ -45,7 +45,7 @@ find_package(Pangolin REQUIRED)
 #find_package(realsense2)
 
 # Specify the fastdeploy library path after downloading and decompression
-set(FASTDEPLOY_INSTALL_DIR /home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/fastdeploy-linux-x64-gpu-1.0.4)
+set(FASTDEPLOY_INSTALL_DIR ${PROJECT_SOURCE_DIR}/Thirdparty/fastdeploy-linux-x64-1.0.4)
 
 include(${FASTDEPLOY_INSTALL_DIR}/FastDeploy.cmake)
 
