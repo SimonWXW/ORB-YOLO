@@ -297,11 +297,6 @@ public:
     vector<float> mvLevelSigma2;
     vector<float> mvInvLevelSigma2;
 
-    // bbox and class
-    vector<std::array<float, 4>> mvBoundingBox;
-    vector<int32_t> mvClass;
-    vector<bool> vbDynamicKeyPoints;
-
     // Undistorted Image Bounds (computed once).
     static float mnMinX;
     static float mnMaxX;
@@ -317,10 +312,19 @@ public:
 
     int mnDataset;
 
+    // bbox and class
+    vector<std::array<float, 4>> mvBoundingBox;
+    vector<int32_t> mvClass;
+    vector<bool> mvbDynamicKeys;
+
 #ifdef REGISTER_TIMES
     double mTimeORB_Ext;
     double mTimeStereoMatch;
 #endif
+
+public:
+    bool IsInDynamicBBox(int i);
+    bool IsInStaticBBox(int i);
 
 private:
 

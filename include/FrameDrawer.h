@@ -89,7 +89,7 @@ protected:
     // bbox and class
     vector<std::array<float, 4>> mvBoundingBox;
     vector<int32_t> mvClass;
-    vector<bool> vbDynamicKeyPoints;
+    vector<bool> mvbDynamicKeys;
 };
 
 } //namespace ORB_SLAM

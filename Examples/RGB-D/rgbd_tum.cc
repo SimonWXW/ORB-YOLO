@@ -49,8 +49,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    //yolov8 params
-    const std::string& model_file = "/home/tianbot/ORB_SLAM3-with-YOLO/model/yolov8s.onnx";
+    //yolov8
+    const std::string& model_file = "./model/yolov8n.onnx";
     string image_file;
     fastdeploy::vision::DetectionResult res;
     

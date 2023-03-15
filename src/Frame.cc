@@ -221,13 +221,14 @@ Frame::Frame(const cv::Mat &imGray,
 {
     mvBoundingBox = res.boxes;
     mvClass = res.label_ids;
-    /*
+/*
     // test: print all boxes class and corresponding coordinates
         for(int i=0; i<mvBoundingBox.size(); i++){
             cout << "class: " << mvClass[i] << endl;
         }
         cout << "-----frame.cc-----" <<endl;
         */
+
         
         
     // Frame ID
@@ -258,6 +259,16 @@ Frame::Frame(const cv::Mat &imGray,
 
     if(mvKeys.empty())
         return;
+
+    // judge which keys are dynamic and to be excluded
+    for(int k=0; k<mvKeys.size(); k++){
+        if(IsInDynamicBBox(k) && !IsInStaticBBox(k)){
+            mvbDynamicKeys.push_back(true);
+            mvKeys[k] = cv::KeyPoint(-1, -1, -1);
+        }
+        else
+            mvbDynamicKeys.push_back(false);
+    }
 
     UndistortKeyPoints();
 
@@ -1270,6 +1281,56 @@ bool Frame::isInFrustumChecks(MapPoint *pMP, float viewingCosLimit, bool bRight)
 
 Eigen::Vector3f Frame::UnprojectStereoFishEye(const int &i){
     return mRwc * mvStereo3Dpoints[i] + mOw;
+}
+
+bool Frame::IsInDynamicBBox(int i) {
+    bool isDynamic = false;
+
+    const cv::KeyPoint& kp = mvKeys[i];
+    float kp_x = kp.pt.x;
+    float kp_y = kp.pt.y;
+
+    for(int j=0; j<mvBoundingBox.size(); j++){
+        if(mvClass[j] == 0 || mvClass[j] == 56){
+            float left = mvBoundingBox[j][0];
+            float top = mvBoundingBox[j][1];
+            float right = mvBoundingBox[j][2];
+            float bottom = mvBoundingBox[j][3];
+
+            if(kp_x > left - 2
+                && kp_x < right + 2
+                && kp_y > top - 2
+                && kp_y < bottom + 2)
+                isDynamic = true;
+        }
+    }
+
+    return isDynamic;
+}
+
+bool Frame::IsInStaticBBox(int i) {
+    bool isStatic = false;
+
+    const cv::KeyPoint& kp = mvKeys[i];
+    float kp_x = kp.pt.x;
+    float kp_y = kp.pt.y;
+
+    for(int j=0; j<mvBoundingBox.size(); j++){
+        if(mvClass[j] != 0 && mvClass[j] != 56){
+            float left = mvBoundingBox[j][0];
+            float top = mvBoundingBox[j][1];
+            float right = mvBoundingBox[j][2];
+            float bottom = mvBoundingBox[j][3];
+
+            if(kp_x > left - 2
+               && kp_x < right + 2
+               && kp_y > top - 2
+               && kp_y < bottom + 2)
+                isStatic = true;
+        }
+    }
+
+    return isStatic;
 }
 
 } //namespace ORB_SLAM

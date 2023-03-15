@@ -60,10 +60,12 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
     //local variable: bbox and class
     vector<std::array<float, 4>> vBoundingBox;
     vector<int32_t> vClass;
+    vector<bool> vbDynamicKeys;
 
     cv::Scalar standardColor(0,255,0);  //green
     cv::Scalar odometryColor(255,0,0);  //blue
     cv::Scalar pureRed(0, 0, 255);     //red
+    cv::Scalar pureBlue = odometryColor;
 
     //Copy variables within scoped mutex
     {
@@ -102,6 +104,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
             //copy from member variable to local variable
             vBoundingBox = mvBoundingBox;
             vClass = mvClass;
+            vbDynamicKeys = mvbDynamicKeys;
 
         }
         else if(mState==Tracking::LOST)
@@ -189,21 +192,30 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
                     pt2.y=vCurrentKeys[i].pt.y+r;
                 }
 
-                // Draw bounding box if it is detected as person
-                for(int j = 0; j < mvBoundingBox.size(); j++){
-                    if(mvClass[j] == 0){    // person: 0
-                        cv::Point2f top_left = cv::Point2f(mvBoundingBox[j][0], mvBoundingBox[j][1]);
-                        cv::Point2f bottom_right = cv::Point2f(mvBoundingBox[j][2], mvBoundingBox[j][3]);
+                // Draw bounding box
+                for(int j = 0; j < vBoundingBox.size(); j++){
+                    cv::Point2f top_left = cv::Point2f(vBoundingBox[j][0], vBoundingBox[j][1]);
+                    cv::Point2f bottom_right = cv::Point2f(vBoundingBox[j][2], vBoundingBox[j][3]);
+
+                    if(vClass[j] == 0 || vClass[j] == 56)    //dynamic
                         cv::rectangle(im, top_left, bottom_right, pureRed, 2);
-                    }
+                    else
+                        cv::rectangle(im, top_left, bottom_right, pureBlue, 2);
                 }
 
                 // This is a match to a MapPoint in the map
                 if(vbMap[i])
                 {
-                    cv::rectangle(im,pt1,pt2,standardColor);
-                    cv::circle(im,point,2,standardColor,-1);
-                    mnTracked++;
+                    if(vbDynamicKeys[i]){
+                        cv::rectangle(im,pt1,pt2,pureRed);
+                        cv::circle(im,point,2,pureRed,-1);
+                        mnTracked++;
+                    }
+                    else{
+                        cv::rectangle(im,pt1,pt2,standardColor);
+                        cv::circle(im,point,2,standardColor,-1);
+                        mnTracked++;
+                    }
                 }
                 else // This is match to a "visual odometry" MapPoint created in the last frame
                 {
@@ -391,10 +403,10 @@ void FrameDrawer::Update(Tracking *pTracker)
 {
     unique_lock<mutex> lock(mMutex);
 
-    // bbox and class
+    // detection result update
     mvBoundingBox = pTracker->mCurrentFrame.mvBoundingBox;
     mvClass = pTracker->mCurrentFrame.mvClass;
-    // TODO: vbDynamicKeyPoints;
+    mvbDynamicKeys = pTracker->mCurrentFrame.mvbDynamicKeys;
 
     pTracker->mImGray.copyTo(mIm);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;

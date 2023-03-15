@@ -1772,6 +1772,18 @@ namespace ORB_SLAM3
                         CurrentFrame.mvpMapPoints[bestIdx2]=pMP;
                         nmatches++;
 
+                        //todo: match
+                        /*
+                        int box_id;//可以使用objects_cur_[box_id]定位到物体
+                        if(CurrentFrame.IsInBox(bestIdx2, box_id)){
+                            CurrentFrame.matches_in_box.emplace(bestIdx2,make_pair(i,box_id));
+
+                            if (CurrentFrame.mvClass[box_id] == 0 || CurrentFrame.mvClass[box_id] == 3 )
+                                CurrentFrame.matches_in_dynamic.emplace(bestIdx2,make_pair(i,box_id));
+                        }else
+                            CurrentFrame.matches_out_box.emplace(bestIdx2,i);
+                            */
+
                         if(mbCheckOrientation)
                         {
                             cv::KeyPoint kpLF = (LastFrame.Nleft == -1) ? LastFrame.mvKeysUn[i]
