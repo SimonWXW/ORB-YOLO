@@ -1522,8 +1522,7 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
 Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
                                     const cv::Mat &imD, 
                                     const double &timestamp, 
-                                    string filename,
-                                    fastdeploy::vision::DetectionResult res)
+                                    string filename)
 {
     mImGray = imRGB;
     cv::Mat imDepth = imD;
@@ -1545,13 +1544,19 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
 
     if((fabs(mDepthMapFactor-1.0f)>1e-5) || imDepth.type()!=CV_32F)
         imDepth.convertTo(imDepth,CV_32F,mDepthMapFactor);
+
+    //Object Detection
+    fastdeploy::vision::DetectionResult result;
+    const std::string& model_file = "./model/yolov8n.onnx";
+
+    YoloInfer(model_file, imRGB, &result, CPU);
     
     if (mSensor == System::RGBD)
         mCurrentFrame = Frame(mImGray,imDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,
-                              res);
+                              result);
     else if(mSensor == System::IMU_RGBD)
         mCurrentFrame = Frame(mImGray,imDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,
-                            res, &mLastFrame,*mpImuCalib);
+                            result, &mLastFrame,*mpImuCalib);
 
 
 
@@ -1568,6 +1573,42 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
     Track();
 
     return mCurrentFrame.GetPose();
+}
+
+void Tracking::YoloInfer(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res, int infer_mode)
+{
+    auto model = fastdeploy::vision::detection::YOLOv8(model_file);
+    if(infer_mode == GPU){
+        /*
+        auto option = fastdeploy::RuntimeOption();
+        option.UseGpu();
+        model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+        */
+        cout << "TODO: GPU mode" <<endl;
+        return;
+    }
+
+    if(infer_mode == TRT){
+        /*
+        auto option = fastdeploy::RuntimeOption();
+        option.UseGpu();
+        option.UseTrtBackend();
+        option.SetTrtInputShape("images", {1, 3, 640, 640});
+        model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+        */
+        cout << "TODO: TRT mode" <<endl;
+        return;
+    }
+
+    if (!model.Initialized()) {
+        std::cerr << "Failed to initialize." << std::endl;
+        return;
+    }
+
+    if (!model.Predict(image, res)) {
+        std::cerr << "Failed to predict." << std::endl;
+        return;
+    }
 }
 
 

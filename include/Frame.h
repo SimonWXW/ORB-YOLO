@@ -315,7 +315,7 @@ public:
     // bbox and class
     vector<std::array<float, 4>> mvBoundingBox;
     vector<int32_t> mvClass;
-    vector<bool> mvbDynamicKeys;
+    vector<bool> mvbDynamicKeys;    //FIXME: useless, maybe removed
 
 #ifdef REGISTER_TIMES
     double mTimeORB_Ext;

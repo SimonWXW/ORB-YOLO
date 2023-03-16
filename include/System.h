@@ -40,8 +40,6 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "fastdeploy/vision.h"
-
 
 namespace ORB_SLAM3
 {
@@ -117,8 +115,7 @@ public:
     // Returns the camera pose (empty if tracking fails).
     Sophus::SE3f TrackRGBD(const cv::Mat &im, 
                             const cv::Mat &depthmap, 
-                            const double &timestamp, 
-                            fastdeploy::vision::DetectionResult res,
+                            const double &timestamp,
                             const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), 
                             string filename="");
 
