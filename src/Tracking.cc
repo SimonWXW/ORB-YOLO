@@ -1549,7 +1549,11 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
     fastdeploy::vision::DetectionResult result;
     const std::string& model_file = "./model/yolov8n.onnx";
 
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     YoloInfer(model_file, imRGB, &result, CPU);
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    double tdetect= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+    cout << "tdetect:" << tdetect << endl;
     
     if (mSensor == System::RGBD)
         mCurrentFrame = Frame(mImGray,imDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,

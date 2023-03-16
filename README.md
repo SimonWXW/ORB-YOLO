@@ -9,7 +9,7 @@ We provide examples to run this system in the TUM-RGBD dataset
 
 ### Related Publications:
 
-[YOLOv8] TODO
+[YOLOv8] **[Github repo](https://github.com/ultralytics/ultralytics)**
 
 [ORB-SLAM3] Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M. M. Montiel and Juan D. Tardós, **ORB-SLAM3: An Accurate Open-Source Library for Visual, Visual-Inertial and Multi-Map SLAM**, *IEEE Transactions on Robotics 37(6):1874-1890, Dec. 2021*. **[PDF](https://arxiv.org/abs/2007.11898)**.
 
