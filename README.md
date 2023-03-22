@@ -9,7 +9,7 @@ We provide examples to run this system in the TUM-RGBD dataset
 
 ### Related Publications:
 
-[YOLOv8] **[Github repo](https://github.com/ultralytics/ultralytics)**
+[YOLOv8] **[Github](https://github.com/ultralytics/ultralytics)**
 
 [ORB-SLAM3] Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M. M. Montiel and Juan D. Tardós, **ORB-SLAM3: An Accurate Open-Source Library for Visual, Visual-Inertial and Multi-Map SLAM**, *IEEE Transactions on Robotics 37(6):1874-1890, Dec. 2021*. **[PDF](https://arxiv.org/abs/2007.11898)**.
 
@@ -28,7 +28,10 @@ We provide examples to run this system in the TUM-RGBD dataset
 # 2. Prerequisites
 We have tested the system in **Ubuntu 18.04**, but it should be easy to compile in other platforms. A powerful computer (e.g. i7) will ensure real-time performance and provide more stable and accurate results.
 
-## C++11 or C++0x Compiler
+## Cmake 
+**Required at least 3.18. Tested with 3.26**
+
+## C++11 Compiler
 We use the new thread and chrono functionalities of C++11.
 
 ## Pangolin
@@ -54,7 +57,7 @@ Required to calculate the alignment of the trajectory with the ground truth. **R
 Required to deploy YOLOv8 model in c++ environment to detect dynamic object
 
 You need to download the pre-compiled SDK and uncompress it in ThirdParty folder.
-```
+```shell
 # Download the FastDeploy precompiled library. Users can choose your appropriate version in the `FastDeploy Precompiled Library` mentioned above
 wget https://bj.bcebos.com/fastdeploy/release/cpp/fastdeploy-linux-x64-x.x.x.tgz
 tar xvf fastdeploy-linux-x64-x.x.x.tgz
@@ -70,12 +73,12 @@ We provide some examples to process input of a monocular, monocular-inertial, st
 # 3. Building system
 
 Clone the repository:
-```
+```shell
 git clone git@github.com:SimonWXW/ORB_SLAM3-with-YOLO.git
 ```
 
 We provide a script `build.sh` to build the system efficiently:
-```
+```shell
 cd ORB_SLAM3-with-YOLO
 chmod +x build.sh
 ./build.sh
@@ -95,7 +98,7 @@ Directory `Examples` contains several demo programs and calibration files to run
 
 4. Run ORB-SLAM3. For example, for our D435i camera, we would execute:
 
-```
+```shell
 ./Examples/Stereo-Inertial/stereo_inertial_realsense_D435i Vocabulary/ORBvoc.txt ./Examples/Stereo-Inertial/RealSense_D435i.yaml
 ```
 
@@ -103,15 +106,18 @@ Directory `Examples` contains several demo programs and calibration files to run
 
 1. Download a sequence from [http://vision.in.tum.de/data/datasets/rgbd-dataset/download](http://vision.in.tum.de/data/datasets/rgbd-dataset/download) and uncompress it.
 2. Associate RGB images and depth images using the python script [associate.py](http://vision.in.tum.de/data/datasets/rgbd-dataset/tools). We already provide associations for some of the sequences in *Examples/RGB-D/associations/*. You can generate your own associations file executing:
-```
+```shell
 python associate.py rgbd_dataset_freiburg3_walking_xyz/rgb.txt rgbd_dataset_freiburg3_walking_xyz/depth.txt > associations.txt
+```
+```shell
+./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM3.yaml ./dataset/rgbd_dataset_freiburg3_walking_xyz ./dataset/associations.txt cpu
 ```
 
 ## Evaluation
 In TUM-RGBD ground truth is only available in the room where all sequences start and end. As a result the error measures the drift at the end of the sequence. 
 
 Execute the following script to process sequences and compute the RMS ATE:
-```
+```shell
 evo_ape tum rgbd-tum-CameraTrajectory.txt ../dataset/rgbd_dataset_freiburg3_walking_xyz/groundtruth.txt -va -p --plot_mode xyz -a --correct_scale
 ```
 
@@ -121,18 +127,18 @@ evo_ape tum rgbd-tum-CameraTrajectory.txt ../dataset/rgbd_dataset_freiburg3_walk
 Tested with ROS Melodic and ubuntu 18.04.
 
 1. Add the path including *Examples/ROS/ORB_SLAM3* to the ROS_PACKAGE_PATH environment variable. Open .bashrc file:
-  ```
+  ```shell
   gedit ~/.bashrc
   ```
 and add at the end the following line. Replace PATH by the folder where you cloned ORB_SLAM3:
 
-  ```
+  ```shell
   export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:PATH/ORB_SLAM3/Examples/ROS
   ```
   
 2. Execute `build_ros.sh` script:
 
-  ```
+  ```shell
   chmod +x build_ros.sh
   ./build_ros.sh
   ```
