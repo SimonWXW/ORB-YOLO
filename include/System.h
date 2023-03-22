@@ -116,6 +116,7 @@ public:
     Sophus::SE3f TrackRGBD(const cv::Mat &im, 
                             const cv::Mat &depthmap, 
                             const double &timestamp,
+                            string inferDevice,
                             const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), 
                             string filename="");
 

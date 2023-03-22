@@ -75,7 +75,8 @@ public:
     Sophus::SE3f GrabImageRGBD(const cv::Mat &imRGB,
                                 const cv::Mat &imD, 
                                 const double &timestamp, 
-                                string filename);
+                                string filename,
+                                string inferDevice);
     Sophus::SE3f GrabImageMonocular(const cv::Mat &im, const double &timestamp, string filename);
 
     void GrabImuData(const IMU::Point &imuMeasurement);
@@ -113,7 +114,9 @@ public:
 
     float GetImageScale();
 
-    void YoloInfer(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res, int infer_mode);
+    void YoloInferCPU(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res);
+    void YoloInferGPU(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res);
+    void YoloInferTRT(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res);
 
 #ifdef REGISTER_LOOP
     void RequestStop();
@@ -123,13 +126,6 @@ public:
 #endif
 
 public:
-
-    // Infer mode
-    enum eInferDevice{
-        CPU=0,
-        GPU=1,
-        TRT=2
-    };
 
     // Tracking states
     enum eTrackingState{

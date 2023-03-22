@@ -1522,7 +1522,8 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
 Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
                                     const cv::Mat &imD, 
                                     const double &timestamp, 
-                                    string filename)
+                                    string filename,
+                                    string inferDevice)
 {
     mImGray = imRGB;
     cv::Mat imDepth = imD;
@@ -1550,9 +1551,18 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
     const std::string& model_file = "./model/yolov8n.onnx";
 
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-    YoloInfer(model_file, imRGB, &result, CPU);
+
+    if(inferDevice == "cpu")
+        YoloInferCPU(model_file, imRGB, &result);
+    if(inferDevice == "gpu")
+        YoloInferGPU(model_file, imRGB, &result);
+    if(inferDevice == "trt")
+        YoloInferTRT(model_file, imRGB, &result);
+
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+
     double tdetect= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+
     cout << "tdetect:" << tdetect << endl;
     
     if (mSensor == System::RGBD)
@@ -1579,30 +1589,9 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,
     return mCurrentFrame.GetPose();
 }
 
-void Tracking::YoloInfer(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res, int infer_mode)
+void Tracking::YoloInferCPU(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res)
 {
     auto model = fastdeploy::vision::detection::YOLOv8(model_file);
-    if(infer_mode == GPU){
-        /*
-        auto option = fastdeploy::RuntimeOption();
-        option.UseGpu();
-        model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
-        */
-        cout << "TODO: GPU mode" <<endl;
-        return;
-    }
-
-    if(infer_mode == TRT){
-        /*
-        auto option = fastdeploy::RuntimeOption();
-        option.UseGpu();
-        option.UseTrtBackend();
-        option.SetTrtInputShape("images", {1, 3, 640, 640});
-        model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
-        */
-        cout << "TODO: TRT mode" <<endl;
-        return;
-    }
 
     if (!model.Initialized()) {
         std::cerr << "Failed to initialize." << std::endl;
@@ -1615,6 +1604,41 @@ void Tracking::YoloInfer(const string& model_file, cv::Mat image, fastdeploy::vi
     }
 }
 
+void Tracking::YoloInferGPU(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res)
+{
+    auto option = fastdeploy::RuntimeOption();
+    option.UseGpu();
+    auto model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+
+    if (!model.Initialized()) {
+        std::cerr << "Failed to initialize." << std::endl;
+        return;
+    }
+
+    if (!model.Predict(image, res)) {
+        std::cerr << "Failed to predict." << std::endl;
+        return;
+    }
+}
+
+void Tracking::YoloInferTRT(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res)
+{
+        auto option = fastdeploy::RuntimeOption();
+        option.UseGpu();
+        option.UseTrtBackend();
+        option.SetTrtInputShape("images", {1, 3, 640, 640});
+        auto model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+
+        if (!model.Initialized()) {
+            std::cerr << "Failed to initialize." << std::endl;
+            return;
+        }
+
+        if (!model.Predict(image, res)) {
+            std::cerr << "Failed to predict." << std::endl;
+            return;
+        }
+}
 
 Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp, string filename)
 {

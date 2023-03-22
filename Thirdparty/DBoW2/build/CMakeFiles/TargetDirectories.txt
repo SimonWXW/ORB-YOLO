@@ -1,3 +1,0 @@
-/home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/DBoW2/build/CMakeFiles/rebuild_cache.dir
-/home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/DBoW2/build/CMakeFiles/DBoW2.dir
-/home/tianbot/ORB_SLAM3-with-YOLO/Thirdparty/DBoW2/build/CMakeFiles/edit_cache.dir
