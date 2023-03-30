@@ -76,7 +76,8 @@ public:
                                 const cv::Mat &imD, 
                                 const double &timestamp, 
                                 string filename,
-                                string inferDevice);
+                               vector<std::array<float, 4>> bbox,
+                               vector<int32_t> label);
     Sophus::SE3f GrabImageMonocular(const cv::Mat &im, const double &timestamp, string filename);
 
     void GrabImuData(const IMU::Point &imuMeasurement);
@@ -113,10 +114,6 @@ public:
     void SaveSubTrajectory(string strNameFile_frames, string strNameFile_kf, Map* pMap);
 
     float GetImageScale();
-
-    void YoloInferCPU(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res);
-    void YoloInferGPU(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res);
-    void YoloInferTRT(const string& model_file, cv::Mat image, fastdeploy::vision::DetectionResult* res);
 
 #ifdef REGISTER_LOOP
     void RequestStop();

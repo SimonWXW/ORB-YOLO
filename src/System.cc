@@ -33,6 +33,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
+#include "fastdeploy/vision.h"
+
 namespace ORB_SLAM3
 {
 
@@ -328,7 +330,8 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
 Sophus::SE3f System::TrackRGBD(const cv::Mat &im, 
                                 const cv::Mat &depthmap, 
                                 const double &timestamp,
-                                string inferDevice,
+                               vector<std::array<float, 4>> bbox,
+                                vector<int32_t> label,
                                 const vector<IMU::Point>& vImuMeas, 
                                 string filename)
 {
@@ -392,7 +395,7 @@ Sophus::SE3f System::TrackRGBD(const cv::Mat &im,
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
-    Sophus::SE3f Tcw = mpTracker->GrabImageRGBD(imToFeed,imDepthToFeed,timestamp,filename,inferDevice);
+    Sophus::SE3f Tcw = mpTracker->GrabImageRGBD(imToFeed,imDepthToFeed,timestamp,filename,bbox,label);
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;

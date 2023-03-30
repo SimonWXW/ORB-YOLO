@@ -74,7 +74,8 @@ public:
             const float &bf, 
             const float &thDepth, 
             GeometricCamera* pCamera,
-            fastdeploy::vision::DetectionResult res,
+          vector<std::array<float, 4>> bbox,
+          vector<int32_t> label,
             Frame* pPrevF = static_cast<Frame*>(NULL), 
             const IMU::Calib &ImuCalib = IMU::Calib());
 

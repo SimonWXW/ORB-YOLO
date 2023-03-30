@@ -211,7 +211,8 @@ Frame::Frame(const cv::Mat &imGray,
                 const float &bf, 
                 const float &thDepth, 
                 GeometricCamera* pCamera,
-                fastdeploy::vision::DetectionResult res,
+             vector<std::array<float, 4>> bbox,
+             vector<int32_t> label,
                 Frame* pPrevF, 
                 const IMU::Calib &ImuCalib)
     :mpcpi(NULL),mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
@@ -219,17 +220,14 @@ Frame::Frame(const cv::Mat &imGray,
      mImuCalib(ImuCalib), mpImuPreintegrated(NULL), mpPrevFrame(pPrevF), mpImuPreintegratedFrame(NULL), mpReferenceKF(static_cast<KeyFrame*>(NULL)), mbIsSet(false), mbImuPreintegrated(false),
      mpCamera(pCamera),mpCamera2(nullptr), mbHasPose(false), mbHasVelocity(false)
 {
-    mvBoundingBox = res.boxes;
-    mvClass = res.label_ids;
-/*
+    mvBoundingBox = bbox;
+    mvClass = label;
+
     // test: print all boxes class and corresponding coordinates
         for(int i=0; i<mvBoundingBox.size(); i++){
             cout << "class: " << mvClass[i] << endl;
         }
         cout << "-----frame.cc-----" <<endl;
-        */
-
-        
         
     // Frame ID
     mnId=nNextId++;

@@ -25,10 +25,17 @@
 
 #include<System.h>
 
+#include "fastdeploy/vision.h"
+
 using namespace std;
 
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps);
+
+// fastdeploy infer function
+void CpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res);
+void GpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res);
+void TrtInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res);
 
 int main(int argc, char **argv)
 {
@@ -38,7 +45,12 @@ int main(int argc, char **argv)
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association infer_mode" << endl;
         return 1;
     }
-    
+
+    //yolov8
+    const std::string& model_file = "./model/yolov8n.onnx";
+    string image_file;
+    fastdeploy::vision::DetectionResult res;
+
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;
@@ -79,6 +91,7 @@ int main(int argc, char **argv)
         imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
         double tframe = vTimestamps[ni];
+        image_file = string(argv[3])+"/"+vstrImageFilenamesRGB[ni];
 
         if(imRGB.empty())
         {
@@ -101,7 +114,18 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 
-        SLAM.TrackRGBD(imRGB,imD,tframe,string(argv[5]));
+        // detect bounding box
+        if(string(argv[5]) == "cpu")
+            CpuInfer(model_file, image_file, &res);
+        if(string(argv[5]) == "gpu")
+            GpuInfer(model_file, image_file, &res);
+        if(string(argv[5]) == "trt")
+            TrtInfer(model_file, image_file, &res);
+
+        vector<std::array<float, 4>> bbox = res.boxes;
+        vector<int32_t> label = res.label_ids;
+
+        SLAM.TrackRGBD(imRGB,imD,tframe,bbox,label);
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -172,4 +196,64 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
         }
     }
+}
+
+void CpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res) {
+    auto model = fastdeploy::vision::detection::YOLOv8(model_file);
+    if (!model.Initialized()) {
+        std::cerr << "Failed to initialize." << std::endl;
+        return;
+    }
+
+    auto im = cv::imread(image_file);
+
+    if (!model.Predict(im, res)) {
+        std::cerr << "Failed to predict." << std::endl;
+        return;
+    }
+
+}
+
+
+void GpuInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res) {
+    auto option = fastdeploy::RuntimeOption();
+    option.UseGpu();
+
+    auto model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+
+    if (!model.Initialized()) {
+        std::cerr << "Failed to initialize." << std::endl;
+        return;
+    }
+
+    auto im = cv::imread(image_file);
+
+    if (!model.Predict(im, res)) {
+        std::cerr << "Failed to predict." << std::endl;
+        return;
+    }
+
+}
+
+void TrtInfer(const std::string& model_file, string image_file, fastdeploy::vision::DetectionResult* res) {
+  auto option = fastdeploy::RuntimeOption();
+  option.UseGpu();
+  option.UseTrtBackend();
+  option.SetTrtInputShape("images", {1, 3, 640, 640});
+  option.trt_option.serialize_file = "trt_serialized.trt";
+
+  auto model = fastdeploy::vision::detection::YOLOv8(model_file, "", option);
+
+  if (!model.Initialized()) {
+    std::cerr << "Failed to initialize." << std::endl;
+    return;
+  }
+
+  auto im = cv::imread(image_file);
+
+  if (!model.Predict(im, res)) {
+    std::cerr << "Failed to predict." << std::endl;
+    return;
+  }
+
 }
