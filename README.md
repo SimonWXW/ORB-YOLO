@@ -1,5 +1,5 @@
 # ORB-YOLO: An Indoor IMU-aided Visual-Inertial SLAM System for Dynamic Environment
-[PDF](google.com)
+[Paper](https://ieeexplore.ieee.org/document/10457405/authors#authors)
 
 Authors: Xiwen Wu, Yuchen Miao and Zhuo Sun
 
@@ -140,4 +140,15 @@ Once ORB-SLAM3 has loaded the vocabulary, press space in the rosbag tab.
 ![result](https://github.com/SimonWXW/ORB-YOLO/assets/106687022/b9413a0c-3f35-474b-ba6a-93750bc98178)
 
 ## Cite
-Coming soon
+```
+@INPROCEEDINGS{10457405,
+  author={Wu, Xiwen and Miao, Yuchen and Sun, Zhuo},
+  booktitle={2023 International Conference on Artificial Intelligence of Things and Systems (AIoTSys)}, 
+  title={ORB-YOLO: An Indoor IMU-aided Visual-Inertial SLAM System for Dynamic Environment}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={71-78},
+  keywords={Visualization;Simultaneous localization and mapping;Measurement units;Dynamics;Pose estimation;Lighting;Robustness;Visual-Inertial SLAM;Dynamic SLAM;Object Detection},
+  doi={10.1109/AIoTSys58602.2023.00032}}
+```
